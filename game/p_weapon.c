@@ -835,9 +835,9 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	forward[0] = forward[0] - 0.4;
 	fire_rocket(ent, start, forward, damage, 650, 120, 120);
 	forward[0] = forward[0] + 0.2;
-	forward[1] = forward[1] - 0.6;
-	fire_rocket(ent, start, forward, damage, 650, 120, 120);
 	forward[1] = forward[1] - 0.2;
+	fire_rocket(ent, start, forward, damage, 650, 120, 120);
+	forward[1] = forward[1] - 0.4;
 	fire_rocket(ent, start, forward, damage, 650, 120, 120);
 
 	// send muzzle flash
