@@ -342,22 +342,6 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 	G_FreeEdict (self);
 }
 
-void blaster_think(edict_t *self)
-{
-	vec3_t aimdir;
-	if (self == NULL)
-	{
-		return;
-	}
-
-	aimdir[0] = crandom();
-	aimdir[1] = crandom();
-	aimdir[2] = crandom();
-
-	fire_grenade(self->owner, self->s.origin, aimdir, 25, 100, 2, 120);
-	self->nextthink = level.time + 0.5;
-}
-
 void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int effect, qboolean hyper)
 {
 	edict_t	*bolt;
@@ -386,8 +370,8 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 	bolt->s.sound = gi.soundindex ("misc/lasfly.wav");
 	bolt->owner = self;
 	bolt->touch = blaster_touch;
-	bolt->nextthink = level.time + 0.5;
-	bolt->think = blaster_think;
+	bolt->nextthink = level.time + 2;
+	bolt->think = G_FreeEdict;
 	bolt->dmg = damage;
 	bolt->classname = "bolt";
 	if (hyper)
@@ -633,6 +617,26 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 	G_FreeEdict (ent);
 }
 
+void think_rocket(edict_t *self)
+{
+	vec3_t aimdir;
+	vec3_t origin;
+	if (self == NULL)
+	{
+		return;
+	}
+
+	aimdir[0] = self->movedir[0];
+	aimdir[1] = self->movedir[1];
+	aimdir[2] = self->movedir[2];
+	fire_grenade(self->owner, self->s.origin, aimdir, 25, 100, 0.2, 120);
+	aimdir[0] = aimdir[0] + 0.1;
+	aimdir[1] = aimdir[1] + 0.1;
+	aimdir[2] = aimdir[2] + 0.1;
+	fire_grenade(self->owner, self->s.origin, aimdir, 25, 100, 1.0, 120);
+	self->nextthink = level.time + 1;
+}
+
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage)
 {
 	edict_t	*rocket;
@@ -651,7 +655,7 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
 	rocket->owner = self;
 	rocket->touch = rocket_touch;
-	rocket->nextthink = level.time + 8000/speed;
+	rocket->nextthink = level.time + 8000 / speed;
 	rocket->think = G_FreeEdict;
 	rocket->dmg = damage;
 	rocket->radius_dmg = radius_damage;
@@ -660,7 +664,11 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->classname = "rocket";
 
 	if (self->client)
-		check_dodge (self, rocket->s.origin, dir, speed);
+	{
+		check_dodge(self, rocket->s.origin, dir, speed);
+		rocket->nextthink = level.time + .1;
+		rocket->think = think_rocket;
+	}
 
 	gi.linkentity (rocket);
 }

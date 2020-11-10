@@ -829,10 +829,15 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_blaster(ent, start, forward, damage, 1000, effect, hyper);
+	fire_rocket(ent, start, forward, damage, 650, 120, 120);
 	forward[0] = forward[0] + 0.2;
 	fire_rocket(ent, start, forward, damage, 650, 120, 120);
 	forward[0] = forward[0] - 0.4;
+	fire_rocket(ent, start, forward, damage, 650, 120, 120);
+	forward[0] = forward[0] + 0.2;
+	forward[1] = forward[1] - 0.6;
+	fire_rocket(ent, start, forward, damage, 650, 120, 120);
+	forward[1] = forward[1] - 0.2;
 	fire_rocket(ent, start, forward, damage, 650, 120, 120);
 
 	// send muzzle flash
