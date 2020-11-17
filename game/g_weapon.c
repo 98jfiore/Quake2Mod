@@ -482,6 +482,111 @@ static void Grenade_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurfa
 	ent->enemy = other;
 	Grenade_Explode (ent);
 }
+static void Rocket_Grenade_Explode(edict_t *ent)
+{
+	vec3_t		origin;
+	int			mod;
+
+	if (ent->owner->client)
+	{
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+		//gi.dprintf("CLIENT GRENADE");
+	}
+	
+
+	if (ent->owner)
+	{
+		//gi.dprintf("CLIENT GRENADE");
+		vec3_t shot_dir;
+		shot_dir[0] = ent->movedir[0] + crandom();
+		shot_dir[1] = ent->movedir[1] + crandom();
+		shot_dir[2] = ent->movedir[2] + crandom();
+		fire_shotgun(ent->owner, ent->s.origin, shot_dir, 200, 1, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT / 2, MOD_SSHOTGUN);
+		shot_dir[0] = ent->movedir[0];
+		shot_dir[1] = ent->movedir[1];
+		shot_dir[2] = ent->movedir[2];
+		fire_shotgun(ent->owner, ent->s.origin, shot_dir, 200, 1, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT / 2, MOD_SSHOTGUN);
+
+	}
+	//FIXME: if we are onground then raise our Z just a bit since we are a point?
+	if (ent->enemy)
+	{
+		float	points;
+		vec3_t	v;
+		vec3_t	dir;
+
+		VectorAdd(ent->enemy->mins, ent->enemy->maxs, v);
+		VectorMA(ent->enemy->s.origin, 0.5, v, v);
+		VectorSubtract(ent->s.origin, v, v);
+		points = ent->dmg - 0.5 * VectorLength(v);
+		VectorSubtract(ent->enemy->s.origin, ent->s.origin, dir);
+		if (ent->spawnflags & 1)
+			mod = MOD_HANDGRENADE;
+		else
+			mod = MOD_GRENADE;
+		T_Damage(ent->enemy, ent, ent->owner, dir, ent->s.origin, vec3_origin, (int)points, (int)points, DAMAGE_RADIUS, mod);
+	}
+
+	if (ent->spawnflags & 2)
+		mod = MOD_HELD_GRENADE;
+	else if (ent->spawnflags & 1)
+		mod = MOD_HG_SPLASH;
+	else
+		mod = MOD_G_SPLASH;
+	T_RadiusDamage(ent, ent->owner, ent->dmg, ent->enemy, ent->dmg_radius, mod);
+
+	VectorMA(ent->s.origin, -0.02, ent->velocity, origin);
+	gi.WriteByte(svc_temp_entity);
+	if (ent->waterlevel)
+	{
+		if (ent->groundentity)
+			gi.WriteByte(TE_GRENADE_EXPLOSION_WATER);
+		else
+			gi.WriteByte(TE_ROCKET_EXPLOSION_WATER);
+	}
+	else
+	{
+		if (ent->groundentity)
+			gi.WriteByte(TE_GRENADE_EXPLOSION);
+		else
+			gi.WriteByte(TE_ROCKET_EXPLOSION);
+	}
+	gi.WritePosition(origin);
+	gi.multicast(ent->s.origin, MULTICAST_PHS);
+
+	G_FreeEdict(ent);
+}
+
+static void Rocket_Grenade_Touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict(ent);
+		return;
+	}
+
+	if (!other->takedamage)
+	{
+		if (ent->spawnflags & 1)
+		{
+			if (random() > 0.5)
+				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/hgrenb1a.wav"), 1, ATTN_NORM, 0);
+			else
+				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/hgrenb2a.wav"), 1, ATTN_NORM, 0);
+		}
+		else
+		{
+			gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/grenlb1b.wav"), 1, ATTN_NORM, 0);
+		}
+		return;
+	}
+
+	ent->enemy = other;
+	Rocket_Grenade_Explode(ent);
+}
 
 void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius)
 {
@@ -504,11 +609,21 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	grenade->s.effects |= EF_GRENADE;
 	VectorClear (grenade->mins);
 	VectorClear (grenade->maxs);
-	grenade->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
+	grenade->s.modelindex = gi.modelindex("models/objects/grenade/tris.md2");
 	grenade->owner = self;
-	grenade->touch = Grenade_Touch;
-	grenade->nextthink = level.time + timer;
-	grenade->think = Grenade_Explode;
+	if (self->owner && self->message && strcmp(self->message, "FROM_ROCKET") == 0)
+	{
+		grenade->owner = self->owner;
+		grenade->touch = Rocket_Grenade_Touch;
+		grenade->nextthink = level.time + timer;
+		grenade->think = Rocket_Grenade_Explode;
+	}
+	else
+	{
+		grenade->touch = Grenade_Touch;
+		grenade->nextthink = level.time + timer;
+		grenade->think = Grenade_Explode;
+	}
 	grenade->dmg = damage;
 	grenade->dmg_radius = damage_radius;
 	grenade->classname = "grenade";
@@ -625,16 +740,20 @@ void think_rocket(edict_t *self)
 	{
 		return;
 	}
+	if (self->owner && self->owner->client)
+	{
+		//gi.dprintf("OWNER CLIENT");
+	}
 
 	aimdir[0] = self->movedir[0];
 	aimdir[1] = self->movedir[1];
 	aimdir[2] = self->movedir[2];
-	fire_grenade(self->owner, self->s.origin, aimdir, 25, 100, 0.2, 120);
+	fire_grenade(self, self->s.origin, aimdir, 25, 100, 0.2, 120);
 	aimdir[0] = aimdir[0] + 0.1;
 	aimdir[1] = aimdir[1] + 0.1;
 	aimdir[2] = aimdir[2] + 0.1;
-	fire_grenade(self->owner, self->s.origin, aimdir, 25, 100, 1.0, 120);
-	self->nextthink = level.time + 1;
+	fire_grenade(self, self->s.origin, aimdir, 25, 100, 1.0, 120);
+	self->nextthink = level.time + .2;
 }
 
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage)
@@ -666,7 +785,8 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	if (self->client)
 	{
 		check_dodge(self, rocket->s.origin, dir, speed);
-		rocket->nextthink = level.time + .1;
+		rocket->nextthink = level.time + .4;
+		rocket->message = "FROM_ROCKET";
 		rocket->think = think_rocket;
 	}
 
