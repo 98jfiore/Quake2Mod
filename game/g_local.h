@@ -734,6 +734,10 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick);
 void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius);
 
+// MOD FOR ALL WEAPONS HAVE SAME AMMO
+void spend_ammo(edict_t *ent, int cost);
+
+
 //
 // g_ptrail.c
 //

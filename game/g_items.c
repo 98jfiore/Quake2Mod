@@ -1323,8 +1323,12 @@ always owned, never in the world
 /* icon */		"w_shotgun",
 /* pickup */	"Shotgun",
 		0,
-		1,
-		"Shells",
+		//1,
+		//Use 20 bullets
+		20,
+		//"Shells",
+		//Use bullets
+		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_SHOTGUN,
 		NULL,
@@ -1346,8 +1350,12 @@ always owned, never in the world
 /* icon */		"w_sshotgun",
 /* pickup */	"Super Shotgun",
 		0,
-		2,
-		"Shells",
+		//2,
+		//Use 40 bullets
+		40,
+		//"Shells",
+		//Use bullets
+		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_SUPERSHOTGUN,
 		NULL,
@@ -1369,7 +1377,9 @@ always owned, never in the world
 /* icon */		"w_machinegun",
 /* pickup */	"Machinegun",
 		0,
-		1,
+		//1,
+		//Use 10 bullets
+		10,
 		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_MACHINEGUN,
@@ -1392,7 +1402,9 @@ always owned, never in the world
 /* icon */		"w_chaingun",
 /* pickup */	"Chaingun",
 		0,
-		1,
+		//1,
+		//Use 30 bullets
+		30,
 		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_CHAINGUN,
@@ -1415,8 +1427,12 @@ always owned, never in the world
 /* icon */		"a_grenades",
 /* pickup */	"Grenades",
 /* width */		3,
-		5,
-		"grenades",
+		//5,
+		//Use 10 bullets
+		10,
+		//"grenades",
+		//Use bullets
+		"Bullets",
 		IT_AMMO|IT_WEAPON,
 		WEAP_GRENADES,
 		NULL,
@@ -1438,8 +1454,12 @@ always owned, never in the world
 /* icon */		"w_glauncher",
 /* pickup */	"Grenade Launcher",
 		0,
-		1,
-		"Grenades",
+		//1,
+		//Use 40 bullets
+		40,
+		//"Grenades",
+		//Use bullets
+		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_GRENADELAUNCHER,
 		NULL,
@@ -1461,8 +1481,12 @@ always owned, never in the world
 /* icon */		"w_rlauncher",
 /* pickup */	"Rocket Launcher",
 		0,
-		1,
-		"Rockets",
+		//1,
+		//Use 50 bullets
+		50,
+		//"Rockets",
+		//Use bullets
+		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_ROCKETLAUNCHER,
 		NULL,
@@ -1484,8 +1508,12 @@ always owned, never in the world
 /* icon */		"w_hyperblaster",
 /* pickup */	"HyperBlaster",
 		0,
-		1,
-		"Cells",
+		//1,
+		//Use 15 bullets
+		15,
+		//"Cells",
+		//Use bullets
+		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_HYPERBLASTER,
 		NULL,
@@ -1507,8 +1535,12 @@ always owned, never in the world
 /* icon */		"w_railgun",
 /* pickup */	"Railgun",
 		0,
-		1,
-		"Slugs",
+		//1,
+		//Use 10 bullets
+		10,
+		//"Slugs",
+		//Use bullets
+		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_RAILGUN,
 		NULL,
@@ -1531,7 +1563,9 @@ always owned, never in the world
 /* pickup */	"BFG10K",
 		0,
 		50,
-		"Cells",
+		//"Cells",
+		//Use bullets
+		"Bullets",
 		IT_WEAPON|IT_STAY_COOP,
 		WEAP_BFG,
 		NULL,
@@ -2110,6 +2144,12 @@ tank commander's head
 		0,
 /* precache */ "items/s_health.wav items/n_health.wav items/l_health.wav items/m_health.wav"
 	},
+
+
+
+
+
+
 
 	// end of list marker
 	{NULL}

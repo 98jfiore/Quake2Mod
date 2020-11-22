@@ -201,6 +201,8 @@ void ChangeWeapon (edict_t *ent)
 		ent->client->ammo_index = ITEM_INDEX(FindItem(ent->client->pers.weapon->ammo));
 	else
 		ent->client->ammo_index = 0;
+	
+	//Mod all ammo to have same slot:
 
 	if (!ent->client->pers.weapon)
 	{	// dead
@@ -563,10 +565,16 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 
 	timer = ent->client->grenade_time - level.time;
 	speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
+	//Before firing, make sure you have the ammo
+	if (has_ammo(ent, 10) == 0)
+	{
+		return;
+	}
+	
 	fire_grenade2 (ent, start, forward, damage, speed, timer, radius, held);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index]--;
+		spend_ammo(ent, 10);
 
 	ent->client->grenade_time = level.time + 1.0;
 
@@ -737,7 +745,7 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index]--;
+		spend_ammo(ent, 40);
 }
 
 void Weapon_GrenadeLauncher (edict_t *ent)
@@ -793,7 +801,7 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index]--;
+		spend_ammo(ent, 50);
 }
 
 void Weapon_RocketLauncher (edict_t *ent)
@@ -906,7 +914,7 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 				damage = 20;
 			Blaster_Fire (ent, offset, damage, true, effect);
 			if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-				ent->client->pers.inventory[ent->client->ammo_index]--;
+				spend_ammo(ent, 15);
 
 			ent->client->anim_priority = ANIM_ATTACK;
 			if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
@@ -1021,7 +1029,7 @@ void Machinegun_Fire (edict_t *ent)
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index]--;
+		spend_ammo(ent, 10);
 
 	ent->client->anim_priority = ANIM_ATTACK;
 	if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
@@ -1160,7 +1168,7 @@ void Chaingun_Fire (edict_t *ent)
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index] -= shots;
+		spend_ammo(ent, 30);
 }
 
 
@@ -1224,7 +1232,7 @@ void weapon_shotgun_fire (edict_t *ent)
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index]--;
+		spend_ammo(ent, 20);
 }
 
 void Weapon_Shotgun (edict_t *ent)
@@ -1277,8 +1285,8 @@ void weapon_supershotgun_fire (edict_t *ent)
 	ent->client->ps.gunframe++;
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
-	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index] -= 2;
+	if (!((int)dmflags->value & DF_INFINITE_AMMO))
+		spend_ammo(ent, 40);
 }
 
 void Weapon_SuperShotgun (edict_t *ent)
@@ -1342,8 +1350,8 @@ void weapon_railgun_fire (edict_t *ent)
 	ent->client->ps.gunframe++;
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
-	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index]--;
+	if (!((int)dmflags->value & DF_INFINITE_AMMO))
+		spend_ammo(ent, 40);
 }
 
 
@@ -1419,7 +1427,7 @@ void weapon_bfg_fire (edict_t *ent)
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
 	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index] -= 50;
+		spend_ammo(ent, 50);
 }
 
 void Weapon_BFG (edict_t *ent)
@@ -1432,3 +1440,15 @@ void Weapon_BFG (edict_t *ent)
 
 
 //======================================================================
+
+void spend_ammo(edict_t *ent, int cost)
+{
+	ent->client->pers.inventory[ent->client->ammo_index] -= cost;
+}
+
+int has_ammo(edict_t *ent, int cost)
+{
+	if (ent->client->pers.inventory[ent->client->ammo_index] >= cost)
+		return 1;
+	else return 0;
+}

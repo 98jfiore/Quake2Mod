@@ -619,7 +619,9 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.health			= 100;
 	client->pers.max_health		= 100;
 
-	client->pers.max_bullets	= 200;
+	//client->pers.max_bullets	= 200;
+	//Going to just use bullets for everything, so set ammo high
+	client->pers.max_bullets = 500;
 	client->pers.max_shells		= 100;
 	client->pers.max_rockets	= 50;
 	client->pers.max_grenades	= 50;
