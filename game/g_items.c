@@ -1589,14 +1589,20 @@ always owned, never in the world
 		"models/items/ammo/shells/medium/tris.md2", 0,
 		NULL,
 /* icon */		"a_shells",
-/* pickup */	"Shells",
+/* pickup */	//"Shells",
+//Everything is bullets
+/* pickup */	"Bullets",
 /* width */		3,
-		10,
+//		10,
+//Get 50 ammo instead
+		50,
 		NULL,
 		IT_AMMO,
 		0,
 		NULL,
-		AMMO_SHELLS,
+		//AMMO_SHELLS,
+		//Bullets are the only ammo
+		AMMO_BULLETS,
 /* precache */ ""
 	},
 
@@ -1635,14 +1641,18 @@ always owned, never in the world
 		"models/items/ammo/cells/medium/tris.md2", 0,
 		NULL,
 /* icon */		"a_cells",
-/* pickup */	"Cells",
+/* pickup */	//"Cells",
+//Everything is bullets
+/* pickup */	"Bullets",
 /* width */		3,
 		50,
 		NULL,
 		IT_AMMO,
 		0,
 		NULL,
-		AMMO_CELLS,
+		//AMMO_CELLS,
+		//Bullets are the only ammo
+		AMMO_BULLETS,
 /* precache */ ""
 	},
 
@@ -1658,14 +1668,20 @@ always owned, never in the world
 		"models/items/ammo/rockets/medium/tris.md2", 0,
 		NULL,
 /* icon */		"a_rockets",
-/* pickup */	"Rockets",
+/* pickup */	//"Rockets",
+//Everything is bullets
+/* pickup */	"Bullets",
 /* width */		3,
-		5,
+//		5,
+//Get 50 ammo instead
+50,
 		NULL,
 		IT_AMMO,
 		0,
 		NULL,
-		AMMO_ROCKETS,
+		//AMMO_ROCKETS,
+		//Bullets are the only ammo
+		AMMO_BULLETS,
 /* precache */ ""
 	},
 
@@ -1681,14 +1697,20 @@ always owned, never in the world
 		"models/items/ammo/slugs/medium/tris.md2", 0,
 		NULL,
 /* icon */		"a_slugs",
-/* pickup */	"Slugs",
+/* pickup */	//"Slugs",
+//Everything is bullets
+/* pickup */	"Bullets",
 /* width */		3,
-		10,
+//		10,
+//Get 50 ammo instead
+50,
 		NULL,
 		IT_AMMO,
 		0,
 		NULL,
-		AMMO_SLUGS,
+		//AMMO_SLUGS,
+		//Bullets are the only ammo
+		AMMO_BULLETS,
 /* precache */ ""
 	},
 
