@@ -447,9 +447,18 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		}
 	}
 
-	if (targ == attacker && targ->client)
+	if (targ->client)
 	{
-		return;
+		//edict_t *checker = attacker;
+		//while (checker)
+		//{
+		//	if (checker->client) return;
+		//	else checker = checker->owner;
+		//}
+		if (attacker->client)
+		{
+			return;
+		}
 	}
 
 	take = damage;
