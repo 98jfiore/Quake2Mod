@@ -1584,12 +1584,12 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	level.current_entity = ent;
 	client = ent->client;
 
-	//Only take damage while you're in an rpg battle
+	//Do different things if you're in a battle
 	if (ent->rpg_flags & RPG_IN_COMBAT)
 	{
-		//If it's time to take damage, take damage
 		if (client)
 		{
+			//If it's time to take damage, take damage
 			if (client->rolling_damage > 0)
 			{
 				if (client->next_damage_time < level.time)
@@ -1610,6 +1610,25 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			client->oldbuttons = client->buttons;
 			client->buttons = ucmd->buttons;
 			client->latched_buttons |= client->buttons & ~client->oldbuttons;
+
+			//If it's time for next action, do some thinking
+			if (client->next_rpg_action_time < level.time)
+			{
+				//If it's not your turn, have your enemy try to attack you
+				if(!(ent->rpg_flags & RPG_MY_TURN))
+				{
+					float chance = rand() % 100;
+					//75% chance to hit
+					if (chance <= 75)
+					{
+						ent->pain(ent, client->battle_enemy, 0, 50);
+						client->rolling_damage += 10;
+					}
+					client->next_rpg_action_time = level.time + 2;
+				}
+				//If it is your turn, you can attack, so deal with that in your weapons
+			}
+
 			//You're in combat, do nothing else
 			return;
 		}

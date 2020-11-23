@@ -832,8 +832,9 @@ void GetChaseTarget(edict_t *ent);
 
 
 // rpg flags
-#define RPG_IN_COMBAT			0x00000001	// damage was indirect
-#define RPG_WAITING				0x00000002 // armour does not protect from this damage
+#define RPG_IN_COMBAT			0x00000001	// Battle is started and I'm a participant
+#define RPG_WAITING				0x00000002 // Battle is started and I'm not a participant
+#define RPG_MY_TURN				0x00000004 // It's my turn in battle
 
 
 
@@ -978,6 +979,11 @@ struct gclient_s
 	//Rolling damage to take
 	int rolling_damage;
 	float next_damage_time;
+
+	
+	//RPG Combat info
+	edict_t		*battle_enemy;
+	float		next_rpg_action_time;
 };
 
 

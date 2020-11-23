@@ -396,7 +396,7 @@ void LookAtRPGOponent(edict_t *clientPart, edict_t *monsterPart)
 		vectoangles(dir_ctom, clientPart->client->ps.viewangles);
 	}
 	if (dir_mtoc[0])
-		monsterPart->s.angles[YAW] = vectoyaw(dir_mtoc);
+		vectoangles(dir_mtoc, monsterPart->s.angles);
 
 
 }
@@ -409,6 +409,11 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	gclient_t *client;
 	if (targ->client || attacker->client)
 	{
+		//If either is flagged as something rpg, we're done here
+		if (targ->rpg_flags || attacker->rpg_flags)
+		{
+			return;
+		}
 		//The non client should be a monster
 		if (targ->svflags & SVF_MONSTER || attacker->svflags & SVF_MONSTER)
 		{
@@ -418,14 +423,20 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 			//Whoever is client, they can't look
 			if (targ->client)
 			{
+				client = targ->client;
+				client->battle_enemy = attacker;
 				LookAtRPGOponent(targ, attacker);
-				targ->client->ps.pmove.pm_type = PM_DEAD;
+				//targ->rpg_flags = targ->rpg_flags & RPG_MY_TURN;
 			}
 			else if (attacker->client)
 			{
+				client = attacker->client;
+				client->battle_enemy = targ;
 				LookAtRPGOponent(attacker, targ);
-				attacker->client->ps.pmove.pm_type = PM_DEAD;
+				//attacker->rpg_flags = targ->rpg_flags & RPG_MY_TURN;
 			}
+			client->ps.pmove.pm_type = PM_DEAD;
+			client->next_rpg_action_time = level.time + 0.5;
 
 			//Turn everyone else off
 			edict_t	*other = NULL;
