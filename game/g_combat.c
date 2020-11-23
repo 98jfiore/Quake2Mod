@@ -491,8 +491,15 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		else
 			SpawnDamage (te_sparks, point, normal, take);
 
-
-		targ->health = targ->health - take;
+		//Add to rolling damage for client instead of doing right away
+		if (client)
+		{
+			client->rolling_damage += take;
+		}
+		else
+		{
+			targ->health = targ->health - take;
+		}
 			
 		if (targ->health <= 0)
 		{

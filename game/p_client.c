@@ -629,6 +629,11 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.max_slugs		= 50;
 
 	client->pers.connected = true;
+
+
+	//Initialize rolling damage to zero
+	client->rolling_damage = 0;
+	client->next_damage_time = level.time;
 }
 
 
@@ -1578,6 +1583,26 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 	level.current_entity = ent;
 	client = ent->client;
+
+	//If it's time to take damage, take damage
+	if (client)
+	{
+		if (client->rolling_damage > 0)
+		{
+			if (client->next_damage_time < level.time)
+			{
+				ent->health--;
+				client->rolling_damage--;
+				client->next_damage_time = level.time + 0.1;
+				if (ent->health <= 0)
+				{
+					vec3_t vec3_origin = { 0, 0, 0 };
+					player_die(ent, ent, ent, 100000, vec3_origin);
+					return;
+				}
+			}
+		}
+	}
 
 	if (level.intermissiontime)
 	{

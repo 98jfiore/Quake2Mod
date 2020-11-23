@@ -963,6 +963,13 @@ struct gclient_s
 
 	edict_t		*chase_target;		// player we are chasing
 	qboolean	update_chase;		// need to update chase info?
+
+
+
+
+	//Rolling damage to take
+	int rolling_damage;
+	float next_damage_time;
 };
 
 
