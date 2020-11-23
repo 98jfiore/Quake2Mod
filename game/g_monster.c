@@ -418,6 +418,18 @@ void M_MoveFrame (edict_t *self)
 
 void monster_think (edict_t *self)
 {
+	//Don't think if you're in RPG
+	if (self->rpg_flags & RPG_IN_COMBAT)
+	{
+		M_CatagorizePosition(self);
+		M_WorldEffects(self);
+		M_SetEffects(self);
+		return;
+	}
+	else if (self->rpg_flags & RPG_WAITING)
+	{
+		return;
+	}
 	M_MoveFrame (self);
 	if (self->linkcount != self->monsterinfo.linkcount)
 	{

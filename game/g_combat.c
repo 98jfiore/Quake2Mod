@@ -374,9 +374,76 @@ qboolean CheckTeamDamage (edict_t *targ, edict_t *attacker)
 	return false;
 }
 
+//Look at RPG oponent
+void LookAtRPGOponent(edict_t *clientPart, edict_t *monsterPart)
+{
+	vec3_t		dir_ctom;
+	vec3_t		dir_mtoc;
+
+	if (clientPart && clientPart != world)
+	{
+		VectorSubtract(monsterPart->s.origin, clientPart->s.origin, dir_ctom);
+	}
+	if (monsterPart && monsterPart != world)
+	{
+		VectorSubtract(clientPart->s.origin, monsterPart->s.origin, dir_mtoc);
+	}
+
+	if (dir_ctom[0])
+	{
+
+		vectoangles(dir_ctom, clientPart->client->v_angle);
+		vectoangles(dir_ctom, clientPart->client->ps.viewangles);
+	}
+	if (dir_mtoc[0])
+		monsterPart->s.angles[YAW] = vectoyaw(dir_mtoc);
+
+
+}
+
+
 void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir, vec3_t point, vec3_t normal, int damage, int knockback, int dflags, int mod)
 {
-	gclient_t	*client;
+	//USE T_DAMAGE to initialize an RPG Battle
+	//The client must be one of the members of the battle, ignore otherwise
+	gclient_t *client;
+	if (targ->client || attacker->client)
+	{
+		//The non client should be a monster
+		if (targ->svflags & SVF_MONSTER || attacker->svflags & SVF_MONSTER)
+		{
+			targ->rpg_flags = RPG_IN_COMBAT;
+			attacker->rpg_flags = RPG_IN_COMBAT;
+
+			//Whoever is client, they can't look
+			if (targ->client)
+			{
+				LookAtRPGOponent(targ, attacker);
+				targ->client->ps.pmove.pm_type = PM_DEAD;
+			}
+			else if (attacker->client)
+			{
+				LookAtRPGOponent(attacker, targ);
+				attacker->client->ps.pmove.pm_type = PM_DEAD;
+			}
+
+			//Turn everyone else off
+			edict_t	*other = NULL;
+			while ((other = findradius(other, inflictor->s.origin, 10000)) != NULL)
+			{
+				if (other == targ || other == attacker)
+					continue;
+				if (!other->takedamage)
+					continue;
+
+				
+				other->rpg_flags = RPG_WAITING;
+			}
+		}
+	}
+
+	//Old code to do damage
+/*	gclient_t	*client;
 	int			take;
 	int			save;
 	int			asave;
@@ -542,7 +609,7 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		client->damage_blood += take;
 		client->damage_knockback += knockback;
 		VectorCopy (point, client->damage_from);
-	}
+	} */
 }
 
 

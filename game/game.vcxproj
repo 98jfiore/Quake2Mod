@@ -81,7 +81,7 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>D:\Steam_Games\steamapps\common\Quake 2\earthbound</OutDir>
+    <OutDir>D:\Steam_Games\steamapps\common\Quake 2\earthbound\</OutDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>gamex86</TargetName>
   </PropertyGroup>

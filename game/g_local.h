@@ -830,6 +830,14 @@ void GetChaseTarget(edict_t *ent);
 #define	ANIM_REVERSE	6
 
 
+
+// rpg flags
+#define RPG_IN_COMBAT			0x00000001	// damage was indirect
+#define RPG_WAITING				0x00000002 // armour does not protect from this damage
+
+
+
+
 // client data that stays across multiple level loads
 typedef struct
 {
@@ -1120,5 +1128,10 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
+
+
+
+	// info about rpg battle
+	int rpg_flags;
 };
 

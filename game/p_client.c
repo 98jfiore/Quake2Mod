@@ -1584,23 +1584,34 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	level.current_entity = ent;
 	client = ent->client;
 
-	//If it's time to take damage, take damage
-	if (client)
+	//Only take damage while you're in an rpg battle
+	if (ent->rpg_flags & RPG_IN_COMBAT)
 	{
-		if (client->rolling_damage > 0)
+		//If it's time to take damage, take damage
+		if (client)
 		{
-			if (client->next_damage_time < level.time)
+			if (client->rolling_damage > 0)
 			{
-				ent->health--;
-				client->rolling_damage--;
-				client->next_damage_time = level.time + 0.1;
-				if (ent->health <= 0)
+				if (client->next_damage_time < level.time)
 				{
-					vec3_t vec3_origin = { 0, 0, 0 };
-					player_die(ent, ent, ent, 100000, vec3_origin);
-					return;
+					ent->health--;
+					client->rolling_damage--;
+					client->next_damage_time = level.time + 0.1;
+					if (ent->health <= 0)
+					{
+						vec3_t vec3_origin = { 0, 0, 0 };
+						player_die(ent, ent, ent, 100000, vec3_origin);
+						return;
+					}
 				}
 			}
+
+			//Get new buttons
+			client->oldbuttons = client->buttons;
+			client->buttons = ucmd->buttons;
+			client->latched_buttons |= client->buttons & ~client->oldbuttons;
+			//You're in combat, do nothing else
+			return;
 		}
 	}
 
