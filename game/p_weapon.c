@@ -860,7 +860,47 @@ void Weapon_Blaster_Fire (edict_t *ent)
 		damage = 15;
 	else
 		damage = 10;
-	Blaster_Fire (ent, vec3_origin, damage, false, EF_BLASTER);
+	if (ent->rpg_flags & RPG_IN_COMBAT)
+	{
+		if (ent->rpg_flags & RPG_MY_TURN)
+		{
+			if (ent->client->next_rpg_action_time < level.time)
+			{
+				Blaster_Fire(ent, vec3_origin, damage, false, EF_BLASTER);
+				ent->client->ps.gunframe++;
+				edict_t *enemy = ent->client->battle_enemy;
+				enemy->health -= 5;
+				if (enemy->health <= 0)
+				{
+					rpg_winCombat(ent, enemy);
+					/*enemy->health = enemy->gib_health;
+					enemy->die(enemy, ent, ent, 100, ent->s.origin);
+					ent->rpg_flags = 0;
+					ent->client->rolling_damage = 0;
+
+					edict_t	*other = NULL;
+					while ((other = findradius(other, ent->s.origin, 10000)) != NULL)
+					{
+						if (other == enemy || other == ent)
+							continue;
+						if (!other->takedamage)
+							continue;
+						if (!other->think)
+							continue;
+						other->rpg_flags = 0;
+						monster_start(other);
+					}*/
+				}
+				else
+				{
+					ent->rpg_flags = RPG_IN_COMBAT;
+					ent->client->next_rpg_action_time = level.time + 0.5;
+				}
+			}
+		}
+		return;
+	}
+	Blaster_Fire(ent, vec3_origin, damage, false, EF_BLASTER);
 	ent->client->ps.gunframe++;
 }
 
@@ -1451,4 +1491,27 @@ int has_ammo(edict_t *ent, int cost)
 	if (ent->client->pers.inventory[ent->client->ammo_index] >= cost)
 		return 1;
 	else return 0;
+}
+
+
+int rpg_winCombat(edict_t *client_ent, edict_t *enemy)
+{
+	enemy->health = enemy->gib_health;
+	enemy->die(enemy, client_ent, client_ent, 100, client_ent->s.origin);
+	client_ent->rpg_flags = 0;
+	client_ent->client->rolling_damage = 0;
+
+	edict_t	*other = NULL;
+	while ((other = findradius(other, client_ent->s.origin, 10000)) != NULL)
+	{
+		if (other == enemy || other == client_ent)
+			continue;
+		if (!other->takedamage)
+			continue;
+		if (!other->think)
+			continue;
+		other->rpg_flags = 0;
+		monster_start(other);
+	}
+	return 1;
 }

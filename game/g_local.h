@@ -834,7 +834,7 @@ void GetChaseTarget(edict_t *ent);
 // rpg flags
 #define RPG_IN_COMBAT			0x00000001	// Battle is started and I'm a participant
 #define RPG_WAITING				0x00000002 // Battle is started and I'm not a participant
-#define RPG_MY_TURN				0x00000004 // It's my turn in battle
+#define RPG_MY_TURN				0x00000010 // It's my turn in battle
 
 
 

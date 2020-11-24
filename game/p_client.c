@@ -1621,10 +1621,12 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 					//75% chance to hit
 					if (chance <= 75)
 					{
-						ent->pain(ent, client->battle_enemy, 0, 50);
+						client->damage_blood = 50;
+						P_DamageFeedback(ent);
 						client->rolling_damage += 10;
 					}
-					client->next_rpg_action_time = level.time + 2;
+					client->next_rpg_action_time = level.time + 0.5;
+					ent->rpg_flags |= RPG_MY_TURN;
 				}
 				//If it is your turn, you can attack, so deal with that in your weapons
 			}

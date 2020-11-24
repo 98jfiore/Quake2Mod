@@ -369,6 +369,8 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker)
 
 qboolean CheckTeamDamage (edict_t *targ, edict_t *attacker)
 {
+	if (targ || attacker)
+		return false;
 		//FIXME make the next line real and uncomment this block
 		// if ((ability to damage a teammate == OFF) && (targ's team == attacker's team))
 	return false;
@@ -451,6 +453,11 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 				other->rpg_flags = RPG_WAITING;
 			}
 		}
+	}
+
+	if (mod || dflags || knockback || damage || normal || point || dir)
+	{
+		return;
 	}
 
 	//Old code to do damage
