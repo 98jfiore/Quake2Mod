@@ -722,30 +722,75 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 	int		damage = 120;
 	float	radius;
 
-	radius = damage+40;
-	if (is_quad)
-		damage *= 4;
 
-	VectorSet(offset, 8, 8, ent->viewheight-8);
-	AngleVectors (ent->client->v_angle, forward, right, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	if ((ent->rpg_flags & RPG_IN_COMBAT && ent->rpg_flags & RPG_MY_TURN) || !(ent->rpg_flags & RPG_IN_COMBAT))
+	{
+		radius = damage + 40;
+		if (is_quad)
+			damage *= 4;
 
-	VectorScale (forward, -2, ent->client->kick_origin);
-	ent->client->kick_angles[0] = -1;
+		VectorSet(offset, 8, 8, ent->viewheight - 8);
 
-	fire_grenade (ent, start, forward, damage, 600, 2.5, radius);
+		vec3_t angles;
+		VectorCopy(ent->client->v_angle, angles);
+		for (angles[YAW] = ent->client->v_angle[YAW] - 30; angles[YAW] <= ent->client->v_angle[YAW] + 30; angles[YAW] += 10)
+		{
+			AngleVectors(angles, forward, right, NULL);
+			P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
 
-	gi.WriteByte (svc_muzzleflash);
-	gi.WriteShort (ent-g_edicts);
-	gi.WriteByte (MZ_GRENADE | is_silenced);
-	gi.multicast (ent->s.origin, MULTICAST_PVS);
+			VectorScale(forward, -2, ent->client->kick_origin);
+			ent->client->kick_angles[0] = -1;
 
-	ent->client->ps.gunframe++;
+			fire_grenade(ent, start, forward, damage, 600, 0.5, radius);
+		}
+		VectorCopy(ent->client->v_angle, angles);
+		for (angles[PITCH] = ent->client->v_angle[PITCH] - 30; angles[PITCH] <= ent->client->v_angle[PITCH] + 30; angles[PITCH] += 10)
+		{
+			AngleVectors(angles, forward, right, NULL);
+			P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
 
-	PlayerNoise(ent, start, PNOISE_WEAPON);
+			VectorScale(forward, -2, ent->client->kick_origin);
+			ent->client->kick_angles[0] = -1;
 
-	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		spend_ammo(ent, 40);
+			fire_grenade(ent, start, forward, damage, 600, 0.5, radius);
+		}
+
+		gi.WriteByte(svc_muzzleflash);
+		gi.WriteShort(ent - g_edicts);
+		gi.WriteByte(MZ_GRENADE | is_silenced);
+		gi.multicast(ent->s.origin, MULTICAST_PVS);
+
+		ent->client->ps.gunframe++;
+
+		PlayerNoise(ent, start, PNOISE_WEAPON);
+
+
+
+		if (ent->rpg_flags & RPG_IN_COMBAT)
+		{
+			if (ent->rpg_flags & RPG_MY_TURN)
+			{
+				if (ent->client->next_rpg_action_time < level.time)
+				{
+					if (!((int)dmflags->value & DF_INFINITE_AMMO))
+						spend_ammo(ent, 40);
+
+					edict_t *enemy = ent->client->battle_enemy;
+					enemy->health -= 40;
+					if (enemy->health <= 0)
+					{
+						rpg_winCombat(ent, enemy);
+					}
+					else
+					{
+						ent->rpg_flags = RPG_IN_COMBAT;
+						ent->client->next_rpg_action_time = level.time + 0.5;
+					}
+				}
+			}
+			return;
+		}
+	}
 }
 
 void Weapon_GrenadeLauncher (edict_t *ent)
