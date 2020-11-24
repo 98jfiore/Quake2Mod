@@ -772,36 +772,65 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	float	damage_radius;
 	int		radius_damage;
 
-	damage = 100 + (int)(random() * 20.0);
-	radius_damage = 120;
-	damage_radius = 120;
-	if (is_quad)
+	if ((ent->rpg_flags & RPG_IN_COMBAT && ent->rpg_flags & RPG_MY_TURN) || !(ent->rpg_flags & RPG_IN_COMBAT))
 	{
-		damage *= 4;
-		radius_damage *= 4;
+		damage = 100 + (int)(random() * 20.0);
+		radius_damage = 120;
+		damage_radius = 120;
+		if (is_quad)
+		{
+			damage *= 4;
+			radius_damage *= 4;
+		}
+
+		AngleVectors(ent->client->v_angle, forward, right, NULL);
+
+		VectorScale(forward, -2, ent->client->kick_origin);
+		ent->client->kick_angles[0] = -1;
+
+		VectorSet(offset, 8, 8, ent->viewheight - 8);
+		P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
+		fire_firework(ent, start, forward, damage, 650, damage_radius, radius_damage);
+
+		// send muzzle flash
+		gi.WriteByte(svc_muzzleflash);
+		gi.WriteShort(ent - g_edicts);
+		gi.WriteByte(MZ_ROCKET | is_silenced);
+		gi.multicast(ent->s.origin, MULTICAST_PVS);
+
+		ent->client->ps.gunframe++;
+
+		PlayerNoise(ent, start, PNOISE_WEAPON);
+
+		if (ent->rpg_flags & RPG_IN_COMBAT)
+		{
+			if (ent->rpg_flags & RPG_MY_TURN)
+			{
+				if (ent->client->next_rpg_action_time < level.time)
+				{
+					if (!((int)dmflags->value & DF_INFINITE_AMMO))
+						spend_ammo(ent, 50);
+
+					edict_t *enemy = ent->client->battle_enemy;
+					enemy->health -= 50;
+					if (enemy->health <= 0)
+					{
+						rpg_winCombat(ent, enemy);
+					}
+					else
+					{
+						ent->rpg_flags = RPG_IN_COMBAT;
+						ent->client->next_rpg_action_time = level.time + 0.5;
+					}
+				}
+			}
+			return;
+		}
 	}
 
-	AngleVectors (ent->client->v_angle, forward, right, NULL);
-
-	VectorScale (forward, -2, ent->client->kick_origin);
-	ent->client->kick_angles[0] = -1;
-
-	VectorSet(offset, 8, 8, ent->viewheight-8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
-
-	// send muzzle flash
-	gi.WriteByte (svc_muzzleflash);
-	gi.WriteShort (ent-g_edicts);
-	gi.WriteByte (MZ_ROCKET | is_silenced);
-	gi.multicast (ent->s.origin, MULTICAST_PVS);
-
-	ent->client->ps.gunframe++;
-
-	PlayerNoise(ent, start, PNOISE_WEAPON);
-
-	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		spend_ammo(ent, 50);
+	//Only spend ammo in RPG Battle
+	//if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
+	//	spend_ammo(ent, 50);
 }
 
 void Weapon_RocketLauncher (edict_t *ent)
@@ -837,7 +866,8 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_blaster (ent, start, forward, damage, 1000, effect, hyper);
+	//fire_blaster (ent, start, forward, damage, 1000, effect, hyper);
+	fire_rocket(ent, start, forward, damage, 650, 10, 10);
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -849,6 +879,9 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	gi.multicast (ent->s.origin, MULTICAST_PVS);
 
 	PlayerNoise(ent, start, PNOISE_WEAPON);
+
+	if (effect)
+		return;
 }
 
 
@@ -860,48 +893,35 @@ void Weapon_Blaster_Fire (edict_t *ent)
 		damage = 15;
 	else
 		damage = 10;
-	if (ent->rpg_flags & RPG_IN_COMBAT)
-	{
-		if (ent->rpg_flags & RPG_MY_TURN)
-		{
-			if (ent->client->next_rpg_action_time < level.time)
-			{
-				Blaster_Fire(ent, vec3_origin, damage, false, EF_BLASTER);
-				ent->client->ps.gunframe++;
-				edict_t *enemy = ent->client->battle_enemy;
-				enemy->health -= 5;
-				if (enemy->health <= 0)
-				{
-					rpg_winCombat(ent, enemy);
-					/*enemy->health = enemy->gib_health;
-					enemy->die(enemy, ent, ent, 100, ent->s.origin);
-					ent->rpg_flags = 0;
-					ent->client->rolling_damage = 0;
 
-					edict_t	*other = NULL;
-					while ((other = findradius(other, ent->s.origin, 10000)) != NULL)
-					{
-						if (other == enemy || other == ent)
-							continue;
-						if (!other->takedamage)
-							continue;
-						if (!other->think)
-							continue;
-						other->rpg_flags = 0;
-						monster_start(other);
-					}*/
-				}
-				else
+	if ((ent->rpg_flags & RPG_IN_COMBAT && ent->rpg_flags & RPG_MY_TURN) || !(ent->rpg_flags & RPG_IN_COMBAT))
+	{
+		if (ent->rpg_flags & RPG_IN_COMBAT)
+		{
+			if (ent->rpg_flags & RPG_MY_TURN)
+			{
+				if (ent->client->next_rpg_action_time < level.time)
 				{
-					ent->rpg_flags = RPG_IN_COMBAT;
-					ent->client->next_rpg_action_time = level.time + 0.5;
+					Blaster_Fire(ent, vec3_origin, damage, false, EF_BLASTER);
+					ent->client->ps.gunframe++;
+					edict_t *enemy = ent->client->battle_enemy;
+					enemy->health -= 5;
+					if (enemy->health <= 0)
+					{
+						rpg_winCombat(ent, enemy);
+					}
+					else
+					{
+						ent->rpg_flags = RPG_IN_COMBAT;
+						ent->client->next_rpg_action_time = level.time + 0.5;
+					}
 				}
 			}
+			return;
 		}
-		return;
+		Blaster_Fire(ent, vec3_origin, damage, false, EF_BLASTER);
+		ent->client->ps.gunframe++;
 	}
-	Blaster_Fire(ent, vec3_origin, damage, false, EF_BLASTER);
-	ent->client->ps.gunframe++;
 }
 
 void Weapon_Blaster (edict_t *ent)
@@ -913,80 +933,141 @@ void Weapon_Blaster (edict_t *ent)
 }
 
 
+
+void HyperBlaster_Fire(edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, int effect)
+{
+	vec3_t	forward, right;
+	vec3_t	start;
+	vec3_t	offset;
+
+	if (is_quad)
+		damage *= 4;
+	AngleVectors(ent->client->v_angle, forward, right, NULL);
+	VectorSet(offset, 24, 8, ent->viewheight - 8);
+	VectorAdd(offset, g_offset, offset);
+	P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
+
+	VectorScale(forward, -2, ent->client->kick_origin);
+	ent->client->kick_angles[0] = -1;
+
+
+	vec3_t angles;
+	VectorCopy(ent->client->v_angle, angles);
+	for (angles[YAW] = ent->client->v_angle[YAW] - 30; angles[YAW] <= ent->client->v_angle[YAW] + 30; angles[YAW] += 10)
+	{
+		AngleVectors(angles, forward, right, NULL);
+		fire_rocket(ent, start, forward, damage, 650, 10, 10);
+	}
+
+	// send muzzle flash
+	gi.WriteByte(svc_muzzleflash);
+	gi.WriteShort(ent - g_edicts);
+	if (hyper)
+		gi.WriteByte(MZ_HYPERBLASTER | is_silenced);
+	else
+		gi.WriteByte(MZ_BLASTER | is_silenced);
+	gi.multicast(ent->s.origin, MULTICAST_PVS);
+
+	PlayerNoise(ent, start, PNOISE_WEAPON);
+
+	if (effect)
+		return;
+}
+
 void Weapon_HyperBlaster_Fire (edict_t *ent)
 {
 	float	rotation;
 	vec3_t	offset;
 	int		effect;
-	int		damage;
 
-	ent->client->weapon_sound = gi.soundindex("weapons/hyprbl1a.wav");
 
-	if (!(ent->client->buttons & BUTTON_ATTACK))
+	if ((ent->rpg_flags & RPG_IN_COMBAT && ent->rpg_flags & RPG_MY_TURN) || !(ent->rpg_flags & RPG_IN_COMBAT))
 	{
-		ent->client->ps.gunframe++;
-	}
-	else
-	{
-		if (! ent->client->pers.inventory[ent->client->ammo_index] )
-		{
-			if (level.time >= ent->pain_debounce_time)
-			{
-				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/noammo.wav"), 1, ATTN_NORM, 0);
-				ent->pain_debounce_time = level.time + 1;
-			}
-			NoAmmoWeaponChange (ent);
-		}
-		else
-		{
-			rotation = (ent->client->ps.gunframe - 5) * 2*M_PI/6;
-			offset[0] = -4 * sin(rotation);
-			offset[1] = 0;
-			offset[2] = 4 * cos(rotation);
+		ent->client->weapon_sound = gi.soundindex("weapons/hyprbl1a.wav");
 
-			if ((ent->client->ps.gunframe == 6) || (ent->client->ps.gunframe == 9))
-				effect = EF_HYPERBLASTER;
-			else
-				effect = 0;
-			if (deathmatch->value)
-				damage = 15;
-			else
-				damage = 20;
-			Blaster_Fire (ent, offset, damage, true, effect);
-			if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-				spend_ammo(ent, 15);
+		if (ent->client->ps.gunframe == 11)
+		{
 
-			ent->client->anim_priority = ANIM_ATTACK;
-			if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
-			{
-				ent->s.frame = FRAME_crattak1 - 1;
-				ent->client->anim_end = FRAME_crattak9;
-			}
-			else
-			{
-				ent->s.frame = FRAME_attack1 - 1;
-				ent->client->anim_end = FRAME_attack8;
-			}
+			ent->client->ps.gunframe = 12;
+			return;
 		}
 
-		ent->client->ps.gunframe++;
-		if (ent->client->ps.gunframe == 12 && ent->client->pers.inventory[ent->client->ammo_index])
-			ent->client->ps.gunframe = 6;
-	}
+		if (ent->rpg_flags & RPG_IN_COMBAT)
+		{
+			if (ent->rpg_flags & RPG_MY_TURN)
+			{
+				if (ent->client->next_rpg_action_time < level.time)
+				{
+					if (!(ent->client->buttons & BUTTON_ATTACK))
+					{
+						ent->client->ps.gunframe++;
+					}
+					else
+					{
+						if (!ent->client->pers.inventory[ent->client->ammo_index])
+						{
+							if (level.time >= ent->pain_debounce_time)
+							{
+								gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/noammo.wav"), 1, ATTN_NORM, 0);
+								ent->pain_debounce_time = level.time + 1;
+							}
+							NoAmmoWeaponChange(ent);
+						}
+						else
+						{
+							rotation = (ent->client->ps.gunframe - 5) * 2 * M_PI / 6;
+							offset[0] = -4 * sin(rotation);
+							offset[1] = 0;
+							offset[2] = 4 * cos(rotation);
 
-	if (ent->client->ps.gunframe == 12)
-	{
-		gi.sound(ent, CHAN_AUTO, gi.soundindex("weapons/hyprbd1a.wav"), 1, ATTN_NORM, 0);
-		ent->client->weapon_sound = 0;
-	}
+							if ((ent->client->ps.gunframe == 6) || (ent->client->ps.gunframe == 9))
+								effect = EF_HYPERBLASTER;
+							else
+								effect = 0;
 
+							HyperBlaster_Fire(ent, offset, 20, true, effect);
+							//In combat, spend ammo
+							if (!((int)dmflags->value & DF_INFINITE_AMMO))
+								spend_ammo(ent, 15);
+							ent->client->ps.gunframe = 11;
+							edict_t *enemy = ent->client->battle_enemy;
+							enemy->health -= 15;
+							if (enemy->health <= 0)
+							{
+								rpg_winCombat(ent, enemy);
+							}
+							else
+							{
+								ent->rpg_flags = RPG_IN_COMBAT;
+								ent->client->next_rpg_action_time = level.time + 0.5;
+							}
+
+
+							ent->client->anim_priority = ANIM_ATTACK;
+						}
+
+						ent->client->ps.gunframe++;
+					}
+
+					if (ent->client->ps.gunframe == 12)
+					{
+						gi.sound(ent, CHAN_AUTO, gi.soundindex("weapons/hyprbd1a.wav"), 1, ATTN_NORM, 0);
+						ent->client->weapon_sound = 0;
+					}
+				}
+			}
+			return;
+		}
+
+		HyperBlaster_Fire(ent, vec3_origin, 15, false, EF_BLASTER);
+		ent->client->ps.gunframe = 11;
+	}
 }
 
 void Weapon_HyperBlaster (edict_t *ent)
 {
 	static int	pause_frames[]	= {0};
-	static int	fire_frames[]	= {6, 7, 8, 9, 10, 11, 0};
-
+	static int	fire_frames[]	= {1, 6, 7, 8, 9, 10, 11, 0};
 	Weapon_Generic (ent, 5, 20, 49, 53, pause_frames, fire_frames, Weapon_HyperBlaster_Fire);
 }
 
