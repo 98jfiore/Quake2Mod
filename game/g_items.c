@@ -1537,7 +1537,7 @@ always owned, never in the world
 		0,
 		//1,
 		//Use 10 bullets
-		10,
+		50,
 		//"Slugs",
 		//Use bullets
 		"Bullets",
@@ -1562,7 +1562,7 @@ always owned, never in the world
 /* icon */		"w_bfg",
 /* pickup */	"BFG10K",
 		0,
-		50,
+		100,
 		//"Cells",
 		//Use bullets
 		"Bullets",

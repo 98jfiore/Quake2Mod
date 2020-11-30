@@ -651,6 +651,118 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	gi.linkentity (rocket);
 }
 
+void think_rocking(edict_t *self)
+{
+	//vec3_t aimdir;
+	//vec3_t origin;
+	vec3_t fire_angle, forward;
+
+	if (self == NULL)
+	{
+		return;
+	}
+
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[YAW] = self->s.angles[YAW] + 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[YAW] = self->s.angles[YAW] - 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+
+
+
+
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[PITCH] = self->s.angles[PITCH] + 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[PITCH] = self->s.angles[PITCH] - 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+
+
+
+
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[PITCH] = self->s.angles[PITCH] + 20;
+	fire_angle[YAW] = self->s.angles[YAW] + 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[PITCH] = self->s.angles[PITCH] - 20;
+	fire_angle[YAW] = self->s.angles[YAW] + 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+	
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[PITCH] = self->s.angles[PITCH] + 20;
+	fire_angle[YAW] = self->s.angles[YAW] - 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+
+	VectorCopy(self->s.angles, fire_angle);
+	fire_angle[PITCH] = self->s.angles[PITCH] - 20;
+	fire_angle[YAW] = self->s.angles[YAW] - 20;
+
+	AngleVectors(fire_angle, forward, NULL, NULL);
+
+	fire_grenade(self->owner, self->s.origin, forward, 50, 200, 0.5, 50);
+
+
+	self->nextthink = level.time + .2;
+}
+void fire_rockingRocket(edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage)
+{
+	edict_t	*rocket;
+
+	rocket = G_Spawn();
+	VectorCopy(start, rocket->s.origin);
+	VectorCopy(dir, rocket->movedir);
+	vectoangles(dir, rocket->s.angles);
+	VectorScale(dir, speed, rocket->velocity);
+	rocket->movetype = MOVETYPE_FLYMISSILE;
+	rocket->clipmask = MASK_SHOT;
+	rocket->solid = SOLID_BBOX;
+	rocket->s.effects |= EF_ROCKET;
+	VectorClear(rocket->mins);
+	VectorClear(rocket->maxs);
+	rocket->s.modelindex = gi.modelindex("models/objects/rocket/tris.md2");
+	rocket->owner = self;
+	rocket->touch = rocket_touch;
+	rocket->nextthink = level.time + 0.1;
+	rocket->think = think_rocking;
+	rocket->dmg = damage;
+	rocket->radius_dmg = radius_damage;
+	rocket->dmg_radius = damage_radius;
+	rocket->s.sound = gi.soundindex("weapons/rockfly.wav");
+	rocket->classname = "rocket";
+
+	if (self->client)
+		check_dodge(self, rocket->s.origin, dir, speed);
+
+	gi.linkentity(rocket);
+}
+
 void firework_touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	vec3_t		origin;
