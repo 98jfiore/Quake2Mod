@@ -555,48 +555,92 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 	int		speed;
 	float	radius;
 
-	radius = damage+40;
-	if (is_quad)
-		damage *= 4;
-
-	VectorSet(offset, 8, 8, ent->viewheight-8);
-	AngleVectors (ent->client->v_angle, forward, right, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-
-	timer = ent->client->grenade_time - level.time;
-	speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
-	//Before firing, make sure you have the ammo
-	if (has_ammo(ent, 10) == 0)
+	if ((ent->rpg_flags & RPG_IN_COMBAT && ent->rpg_flags & RPG_MY_TURN) || !(ent->rpg_flags & RPG_IN_COMBAT))
 	{
-		return;
-	}
-	
-	fire_grenade2 (ent, start, forward, damage, speed, timer, radius, held);
+		radius = damage + 40;
+		if (is_quad)
+			damage *= 4;
 
-	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		spend_ammo(ent, 10);
+		//Before firing, make sure you have the ammo
+		if (has_ammo(ent, 10) == 0)
+		{
+			return;
+		}
 
-	ent->client->grenade_time = level.time + 1.0;
+		VectorSet(offset, 8, 8, ent->viewheight - 8);
 
-	if(ent->deadflag || ent->s.modelindex != 255) // VWep animations screw up corpses
-	{
-		return;
-	}
+		vec3_t angles;
 
-	if (ent->health <= 0)
-		return;
+		VectorCopy(ent->client->v_angle, angles);
+		angles[YAW] = ent->client->v_angle[YAW] + 15;
+		AngleVectors(angles, forward, right, NULL);
+		P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
 
-	if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
-	{
-		ent->client->anim_priority = ANIM_ATTACK;
-		ent->s.frame = FRAME_crattak1-1;
-		ent->client->anim_end = FRAME_crattak3;
-	}
-	else
-	{
-		ent->client->anim_priority = ANIM_REVERSE;
-		ent->s.frame = FRAME_wave08;
-		ent->client->anim_end = FRAME_wave01;
+		timer = ent->client->grenade_time - level.time;
+		speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
+
+		fire_grenade2(ent, start, forward, damage, speed, 0.5, radius, held);
+
+
+		VectorCopy(ent->client->v_angle, angles);
+		angles[YAW] = ent->client->v_angle[YAW] - 15;
+		AngleVectors(angles, forward, right, NULL);
+		P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
+
+		timer = ent->client->grenade_time - level.time;
+		speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
+
+		fire_grenade2(ent, start, forward, damage, speed, 0.5, radius, held);
+
+
+		ent->client->grenade_time = level.time + 1.0;
+
+		if (ent->deadflag || ent->s.modelindex != 255) // VWep animations screw up corpses
+		{
+			return;
+		}
+
+		if (ent->health <= 0)
+			return;
+
+		if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
+		{
+			ent->client->anim_priority = ANIM_ATTACK;
+			ent->s.frame = FRAME_crattak1 - 1;
+			ent->client->anim_end = FRAME_crattak3;
+		}
+		else
+		{
+			ent->client->anim_priority = ANIM_REVERSE;
+			ent->s.frame = FRAME_wave08;
+			ent->client->anim_end = FRAME_wave01;
+		}
+
+
+		if (ent->rpg_flags & RPG_IN_COMBAT)
+		{
+			if (ent->rpg_flags & RPG_MY_TURN)
+			{
+				if (ent->client->next_rpg_action_time < level.time)
+				{
+					if (!((int)dmflags->value & DF_INFINITE_AMMO))
+						spend_ammo(ent, 10);
+
+					edict_t *enemy = ent->client->battle_enemy;
+					enemy->health -= 10;
+					if (enemy->health <= 0)
+					{
+						rpg_winCombat(ent, enemy);
+					}
+					else
+					{
+						ent->rpg_flags = RPG_IN_COMBAT;
+						ent->client->next_rpg_action_time = level.time + 0.5;
+					}
+				}
+			}
+			return;
+		}
 	}
 }
 
@@ -1134,79 +1178,130 @@ void Machinegun_Fire (edict_t *ent)
 	int			kick = 2;
 	vec3_t		offset;
 
-	if (!(ent->client->buttons & BUTTON_ATTACK))
-	{
-		ent->client->machinegun_shots = 0;
-		ent->client->ps.gunframe++;
-		return;
-	}
 
-	if (ent->client->ps.gunframe == 5)
-		ent->client->ps.gunframe = 4;
-	else
-		ent->client->ps.gunframe = 5;
-
-	if (ent->client->pers.inventory[ent->client->ammo_index] < 1)
+	if ((ent->rpg_flags & RPG_IN_COMBAT && ent->rpg_flags & RPG_MY_TURN) || !(ent->rpg_flags & RPG_IN_COMBAT))
 	{
-		ent->client->ps.gunframe = 6;
-		if (level.time >= ent->pain_debounce_time)
+		if (!(ent->client->buttons & BUTTON_ATTACK))
 		{
-			gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/noammo.wav"), 1, ATTN_NORM, 0);
-			ent->pain_debounce_time = level.time + 1;
+			ent->client->machinegun_shots = 0;
+			ent->client->ps.gunframe++;
+			return;
 		}
-		NoAmmoWeaponChange (ent);
-		return;
-	}
 
-	if (is_quad)
-	{
-		damage *= 4;
-		kick *= 4;
-	}
+		if (ent->client->ps.gunframe == 5)
+			ent->client->ps.gunframe = 4;
+		else
+			ent->client->ps.gunframe = 5;
 
-	for (i=1 ; i<3 ; i++)
-	{
-		ent->client->kick_origin[i] = crandom() * 0.35;
-		ent->client->kick_angles[i] = crandom() * 0.7;
-	}
-	ent->client->kick_origin[0] = crandom() * 0.35;
-	ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5;
+		if (ent->client->pers.inventory[ent->client->ammo_index] < 1)
+		{
+			ent->client->ps.gunframe = 6;
+			if (level.time >= ent->pain_debounce_time)
+			{
+				gi.sound(ent, CHAN_VOICE, gi.soundindex("weapons/noammo.wav"), 1, ATTN_NORM, 0);
+				ent->pain_debounce_time = level.time + 1;
+			}
+			NoAmmoWeaponChange(ent);
+			return;
+		}
 
-	// raise the gun as it is firing
-	if (!deathmatch->value)
-	{
-		ent->client->machinegun_shots++;
-		if (ent->client->machinegun_shots > 9)
-			ent->client->machinegun_shots = 9;
-	}
+		if (is_quad)
+		{
+			damage *= 4;
+			kick *= 4;
+		}
 
-	// get start / end positions
-	VectorAdd (ent->client->v_angle, ent->client->kick_angles, angles);
-	AngleVectors (angles, forward, right, NULL);
-	VectorSet(offset, 0, 8, ent->viewheight-8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+		for (i = 1; i < 3; i++)
+		{
+			ent->client->kick_origin[i] = crandom() * 0.35;
+			ent->client->kick_angles[i] = crandom() * 0.7;
+		}
+		ent->client->kick_origin[0] = crandom() * 0.35;
+		ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5;
 
-	gi.WriteByte (svc_muzzleflash);
-	gi.WriteShort (ent-g_edicts);
-	gi.WriteByte (MZ_MACHINEGUN | is_silenced);
-	gi.multicast (ent->s.origin, MULTICAST_PVS);
+		// raise the gun as it is firing
+		if (!deathmatch->value)
+		{
+			ent->client->machinegun_shots++;
+			if (ent->client->machinegun_shots > 9)
+				ent->client->machinegun_shots = 9;
+		}
 
-	PlayerNoise(ent, start, PNOISE_WEAPON);
+		// get start / end positions
+		VectorAdd(ent->client->v_angle, ent->client->kick_angles, angles);
+		AngleVectors(angles, forward, right, NULL);
+		VectorSet(offset, 0, 8, ent->viewheight - 8);
+		P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
+		fire_bullet(ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
 
-	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		spend_ammo(ent, 10);
+		for (int i = 0; i < 3; i++)
+		{
+			vec3_t fire_angle;
+			VectorCopy(angles, fire_angle);
+			if (crandom() > 0.5)
+			{
+				fire_angle[YAW] = angles[YAW] + (crandom() * 15);
+			}
+			else
+			{
+				fire_angle[YAW] = angles[YAW] - (crandom() * 15);
+			}
+			if (crandom() > 0.5)
+			{
+				fire_angle[PITCH] = angles[PITCH] + (crandom() * 15);
+			}
+			else
+			{
+				fire_angle[PITCH] = angles[PITCH] - (crandom() * 15);
+			}
 
-	ent->client->anim_priority = ANIM_ATTACK;
-	if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
-	{
-		ent->s.frame = FRAME_crattak1 - (int) (random()+0.25);
-		ent->client->anim_end = FRAME_crattak9;
-	}
-	else
-	{
-		ent->s.frame = FRAME_attack1 - (int) (random()+0.25);
-		ent->client->anim_end = FRAME_attack8;
+			AngleVectors(fire_angle, forward, right, NULL);
+			fire_rocket(ent, start, forward, damage, 650, 10, 10);
+		}
+
+		gi.WriteByte(svc_muzzleflash);
+		gi.WriteShort(ent - g_edicts);
+		gi.WriteByte(MZ_MACHINEGUN | is_silenced);
+		gi.multicast(ent->s.origin, MULTICAST_PVS);
+
+		PlayerNoise(ent, start, PNOISE_WEAPON);
+
+		ent->client->anim_priority = ANIM_ATTACK;
+		if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
+		{
+			ent->s.frame = FRAME_crattak1 - (int)(random() + 0.25);
+			ent->client->anim_end = FRAME_crattak9;
+		}
+		else
+		{
+			ent->s.frame = FRAME_attack1 - (int)(random() + 0.25);
+			ent->client->anim_end = FRAME_attack8;
+		}
+
+		if (ent->rpg_flags & RPG_IN_COMBAT)
+		{
+			if (ent->rpg_flags & RPG_MY_TURN)
+			{
+				if (ent->client->next_rpg_action_time < level.time)
+				{
+					if (!((int)dmflags->value & DF_INFINITE_AMMO))
+						spend_ammo(ent, 10);
+
+					edict_t *enemy = ent->client->battle_enemy;
+					enemy->health -= 15;
+					if (enemy->health <= 0)
+					{
+						rpg_winCombat(ent, enemy);
+					}
+					else
+					{
+						ent->rpg_flags = RPG_IN_COMBAT;
+						ent->client->next_rpg_action_time = level.time + 0.5;
+					}
+				}
+			}
+			return;
+		}
 	}
 }
 
