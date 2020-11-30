@@ -635,7 +635,7 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 					else
 					{
 						ent->rpg_flags = RPG_IN_COMBAT;
-						ent->client->next_rpg_action_time = level.time + 0.5;
+						ent->client->next_rpg_action_time = level.time + TIME_FOR_NEXT_ATTACK;
 					}
 				}
 			}
@@ -828,7 +828,7 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 					else
 					{
 						ent->rpg_flags = RPG_IN_COMBAT;
-						ent->client->next_rpg_action_time = level.time + 0.5;
+						ent->client->next_rpg_action_time = level.time + TIME_FOR_NEXT_ATTACK;
 					}
 				}
 			}
@@ -909,7 +909,7 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 					else
 					{
 						ent->rpg_flags = RPG_IN_COMBAT;
-						ent->client->next_rpg_action_time = level.time + 0.5;
+						ent->client->next_rpg_action_time = level.time + TIME_FOR_NEXT_ATTACK;
 					}
 				}
 			}
@@ -1002,7 +1002,7 @@ void Weapon_Blaster_Fire (edict_t *ent)
 					else
 					{
 						ent->rpg_flags = RPG_IN_COMBAT;
-						ent->client->next_rpg_action_time = level.time + 0.5;
+						ent->client->next_rpg_action_time = level.time + TIME_FOR_NEXT_ATTACK;
 					}
 				}
 			}
@@ -1128,7 +1128,7 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 							else
 							{
 								ent->rpg_flags = RPG_IN_COMBAT;
-								ent->client->next_rpg_action_time = level.time + 0.5;
+								ent->client->next_rpg_action_time = level.time + TIME_FOR_NEXT_ATTACK;
 							}
 
 
@@ -1296,7 +1296,7 @@ void Machinegun_Fire (edict_t *ent)
 					else
 					{
 						ent->rpg_flags = RPG_IN_COMBAT;
-						ent->client->next_rpg_action_time = level.time + 0.5;
+						ent->client->next_rpg_action_time = level.time + TIME_FOR_NEXT_ATTACK;
 					}
 				}
 			}

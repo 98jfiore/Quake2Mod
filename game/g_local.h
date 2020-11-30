@@ -839,6 +839,8 @@ void GetChaseTarget(edict_t *ent);
 #define RPG_WAITING				0x00000002 // Battle is started and I'm not a participant
 #define RPG_MY_TURN				0x00000010 // It's my turn in battle
 
+#define TIME_FOR_NEXT_ATTACK 1
+
 
 
 
