@@ -1997,14 +1997,14 @@ void level_up(edict_t *client_ent)
 		gi.dprintf("\nCongratulations!  You are now level %i!", client->level);
 		client->curr_exp = client->curr_exp - client->exp_for_next_level;
 		client->exp_for_next_level = (client->level * (client->level + 1)) + 10;
-		float bonus = crandom();
-		if (bonus < 0.35)
+		int bonus = rand() % 100;
+		if (bonus < 35)
 		{
 			client_ent->max_health += 10; 
 			client->pers.max_health = client_ent->max_health;
 			gi.dprintf("\nYour maximum health is now %i.", client_ent->max_health);
 		}
-		else if (bonus < 0.65)
+		else if (bonus < 65)
 		{
 			client->pers.max_bullets += 20;
 			gi.dprintf("\nYour maximum ammo is now %i.", client->pers.max_bullets);
@@ -2012,7 +2012,7 @@ void level_up(edict_t *client_ent)
 		else
 		{
 			client->attack_bonus += 0.1;
-			gi.dprintf("\nYour attack bonus is now %f.", client->attack_bonus);
+			gi.dprintf("\nYour attack bonus is now %.2f.", client->attack_bonus);
 		}
 	}
 }
