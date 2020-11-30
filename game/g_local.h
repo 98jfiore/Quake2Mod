@@ -993,7 +993,7 @@ struct gclient_s
 	int level;
 	int curr_exp;
 	int exp_for_next_level;
-	int attack_bonus;
+	float attack_bonus;
 
 	//RPG Combat info
 	edict_t		*battle_enemy;

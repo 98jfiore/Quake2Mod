@@ -1980,18 +1980,39 @@ int rpg_winCombat(edict_t *client_ent, edict_t *enemy)
 	//Gain experience and maybe level up!
 	gclient_t *client = client_ent->client;
 	client->curr_exp += 10;
+	gi.dprintf("\nYou have gained %i experience!", 10);
 	if (client->curr_exp >= client->exp_for_next_level)
 	{
 		level_up(client_ent);
-	}
-	else
-	{
-		gi.dprintf("You have gained %i experience!", 10);
 	}
 	return 1;
 }
 
 void level_up(edict_t *client_ent)
 {
-
+	gclient_t *client = client_ent->client;
+	while (client->curr_exp >= client->exp_for_next_level)
+	{
+		client->level++;
+		gi.dprintf("\nCongratulations!  You are now level %i!", client->level);
+		client->curr_exp = client->curr_exp - client->exp_for_next_level;
+		client->exp_for_next_level = (client->level * (client->level + 1)) + 10;
+		float bonus = crandom();
+		if (bonus < 0.35)
+		{
+			client_ent->max_health += 10; 
+			client->pers.max_health = client_ent->max_health;
+			gi.dprintf("\nYour maximum health is now %i.", client_ent->max_health);
+		}
+		else if (bonus < 0.65)
+		{
+			client->pers.max_bullets += 20;
+			gi.dprintf("\nYour maximum ammo is now %i.", client->pers.max_bullets);
+		}
+		else
+		{
+			client->attack_bonus += 0.1;
+			gi.dprintf("\nYour attack bonus is now %f.", client->attack_bonus);
+		}
+	}
 }
