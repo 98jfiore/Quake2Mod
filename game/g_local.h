@@ -739,7 +739,8 @@ void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, f
 
 // MOD FOR ALL WEAPONS HAVE SAME AMMO
 void spend_ammo(edict_t *ent, int cost); 
-int rpg_winCombat(edict_t *client_ent, edict_t *enemy); 
+int rpg_winCombat(edict_t *client_ent, edict_t *enemy);
+void level_up(edict_t *client_ent);
 int has_ammo(edict_t *ent, int cost);
 
 
@@ -987,7 +988,13 @@ struct gclient_s
 	int rolling_damage;
 	float next_damage_time;
 
-	
+
+	//Stats info
+	int level;
+	int curr_exp;
+	int exp_for_next_level;
+	int attack_bonus;
+
 	//RPG Combat info
 	edict_t		*battle_enemy;
 	float		next_rpg_action_time;

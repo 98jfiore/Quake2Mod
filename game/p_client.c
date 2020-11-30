@@ -634,6 +634,12 @@ void InitClientPersistant (gclient_t *client)
 	//Initialize rolling damage to zero
 	client->rolling_damage = 0;
 	client->next_damage_time = level.time;
+
+	//Initialize stats
+	client->level = 1;
+	client->curr_exp = 0;
+	client->exp_for_next_level = 12;
+	client->attack_bonus = 1;
 }
 
 
@@ -1799,6 +1805,19 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		other = g_edicts + i;
 		if (other->inuse && other->client->chase_target == ent)
 			UpdateChaseCam(other);
+	}
+
+
+
+
+	//If for some reason, your stats haven't been set
+	if (client->level < 1)
+	{
+		//Initialize stats
+		client->level = 1;
+		client->curr_exp = 0;
+		client->exp_for_next_level = 12;
+		client->attack_bonus = 1;
 	}
 }
 

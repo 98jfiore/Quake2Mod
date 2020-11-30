@@ -627,7 +627,7 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 						spend_ammo(ent, 10);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 10;
+					enemy->health -= (10 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -820,7 +820,7 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 						spend_ammo(ent, 40);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 40;
+					enemy->health -= (40 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -901,7 +901,7 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 						spend_ammo(ent, 50);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 50;
+					enemy->health -= (50 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -994,7 +994,7 @@ void Weapon_Blaster_Fire (edict_t *ent)
 					Blaster_Fire(ent, vec3_origin, damage, false, EF_BLASTER);
 					ent->client->ps.gunframe++;
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 5;
+					enemy->health -= (5 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -1120,7 +1120,7 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 								spend_ammo(ent, 15);
 							ent->client->ps.gunframe = 11;
 							edict_t *enemy = ent->client->battle_enemy;
-							enemy->health -= 15;
+							enemy->health -= (15 * ent->client->attack_bonus);
 							if (enemy->health <= 0)
 							{
 								rpg_winCombat(ent, enemy);
@@ -1287,7 +1287,7 @@ void Machinegun_Fire (edict_t *ent)
 						spend_ammo(ent, 10);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 15;
+					enemy->health -= (15 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -1470,7 +1470,7 @@ void Chaingun_Fire (edict_t *ent)
 						spend_ammo(ent, 30);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 35;
+					enemy->health -= (35 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -1600,7 +1600,7 @@ void weapon_shotgun_fire (edict_t *ent)
 						spend_ammo(ent, 20);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 20;
+					enemy->health -= (20 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -1707,7 +1707,7 @@ void weapon_supershotgun_fire (edict_t *ent)
 						spend_ammo(ent, 40);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 40;
+					enemy->health -= (40 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -1799,10 +1799,10 @@ void weapon_railgun_fire (edict_t *ent)
 
 					edict_t *enemy = ent->client->battle_enemy;
 					//Drain health
-					enemy->health -= 20;
+					enemy->health -= (20 * ent->client->attack_bonus);
 					if (ent->health <= ent->max_health - 15)
 					{
-						ent->health += 15;
+						ent->health += (15 * ent->client->attack_bonus);
 					}
 					else
 					{
@@ -1916,7 +1916,7 @@ void weapon_bfg_fire (edict_t *ent)
 						spend_ammo(ent, 100);
 
 					edict_t *enemy = ent->client->battle_enemy;
-					enemy->health -= 70;
+					enemy->health -= (70 * ent->client->attack_bonus);
 					if (enemy->health <= 0)
 					{
 						rpg_winCombat(ent, enemy);
@@ -1976,5 +1976,22 @@ int rpg_winCombat(edict_t *client_ent, edict_t *enemy)
 		other->rpg_flags = 0;
 		monster_start(other);
 	}
+
+	//Gain experience and maybe level up!
+	gclient_t *client = client_ent->client;
+	client->curr_exp += 10;
+	if (client->curr_exp >= client->exp_for_next_level)
+	{
+		level_up(client_ent);
+	}
+	else
+	{
+		gi.dprintf("You have gained %i experience!", 10);
+	}
 	return 1;
+}
+
+void level_up(edict_t *client_ent)
+{
+
 }

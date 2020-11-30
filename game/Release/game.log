@@ -1,9 +1,25 @@
-﻿Build started 11/30/2020 1:38:05 PM.
+﻿Build started 11/30/2020 2:18:47 PM.
      1>Project "C:\Users\Joe\git\Quake2_Final\game\game.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Z7 /nologo /W4 /WX- /O2 /Oy- /D WIN32 /D NDEBUG /D _WINDOWS /D _CRT_SECURE_NO_WARNINGS /D _VC80_UPGRADE=0x0600 /D _WINDLL /GF /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\release\\" /Fd".\release\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt g_weapon.c
-         g_weapon.c
-     1>g_weapon.c(1153): warning C4127: conditional expression is constant
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Z7 /nologo /W4 /WX- /O2 /Oy- /D WIN32 /D NDEBUG /D _WINDOWS /D _CRT_SECURE_NO_WARNINGS /D _VC80_UPGRADE=0x0600 /D _WINDLL /GF /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\release\\" /Fd".\release\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt p_client.c p_weapon.c
+         p_client.c
+     1>p_client.c(46): warning C4127: conditional expression is constant
+     1>p_client.c(70): warning C4100: 'self' : unreferenced formal parameter
+     1>p_client.c(179): warning C4100: 'damage' : unreferenced formal parameter
+     1>p_client.c(179): warning C4100: 'kick' : unreferenced formal parameter
+     1>p_client.c(179): warning C4100: 'other' : unreferenced formal parameter
+     1>p_client.c(179): warning C4100: 'self' : unreferenced formal parameter
+     1>p_client.c(211): warning C4100: 'inflictor' : unreferenced formal parameter
+     1>p_client.c(501): warning C4100: 'point' : unreferenced formal parameter
+     1>p_client.c(859): warning C4127: conditional expression is constant
+     1>p_client.c(944): warning C4100: 'point' : unreferenced formal parameter
+     1>p_client.c(944): warning C4100: 'attacker' : unreferenced formal parameter
+     1>p_client.c(944): warning C4100: 'inflictor' : unreferenced formal parameter
+     1>p_client.c(1631): warning C4013: 'P_DamageFeedback' undefined; assuming extern returning int
+         p_weapon.c
+     1>p_weapon.c(1977): warning C4013: 'monster_start' undefined; assuming extern returning int
+     1>p_weapon.c(1994): warning C4100: 'client_ent' : unreferenced formal parameter
+         Generating Code...
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Steam_Games\steamapps\common\Quake 2\earthbound\gamex86.dll" /INCREMENTAL:NO /NOLOGO winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:".\game.def" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"D:\Steam_Games\steamapps\common\Quake 2\earthbound\gamex86.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /BASE:"0x20000000" /DYNAMICBASE /NXCOMPAT /IMPLIB:".\..\release\gamex86.lib" /MACHINE:X86 /SAFESEH /DLL .\release\g_ai.obj
          .\release\g_chase.obj
@@ -59,4 +75,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.59
+Time Elapsed 00:00:00.66
