@@ -1979,11 +1979,14 @@ int rpg_winCombat(edict_t *client_ent, edict_t *enemy)
 
 	//Gain experience and maybe level up!
 	gclient_t *client = client_ent->client;
-	client->curr_exp += 10;
-	gi.dprintf("\nYou have gained %i experience!", 10);
-	if (client->curr_exp >= client->exp_for_next_level)
+	if (client->level < 100)
 	{
-		level_up(client_ent);
+		client->curr_exp += 10;
+		gi.dprintf("\nYou have gained %i experience!", 10);
+		if (client->curr_exp >= client->exp_for_next_level)
+		{
+			level_up(client_ent);
+		}
 	}
 	return 1;
 }

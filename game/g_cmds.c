@@ -900,6 +900,37 @@ void Cmd_PlayerList_f(edict_t *ent)
 }
 
 
+void Cmd_Max_level(edict_t *ent)
+{
+	// connect time, ping, score, name
+
+	gclient_t *client = ent->client;
+	while (client->level < 100)
+	{
+		client->level++;
+		client->curr_exp = client->curr_exp - client->exp_for_next_level;
+		client->exp_for_next_level = (client->level * (client->level + 1)) + 10;
+		int bonus = rand() % 100;
+		if (bonus < 35)
+		{
+			ent->max_health += 10;
+			client->pers.max_health = ent->max_health;
+		}
+		else if (bonus < 65)
+		{
+			client->pers.max_bullets += 20;
+		}
+		else
+		{
+			client->attack_bonus += 0.1;
+		}
+	}
+	gi.dprintf("\nCongratulations!  You are now level %i!", client->level);
+	gi.dprintf("\nYour maximum health is now %i.", ent->max_health);
+	gi.dprintf("\nYour maximum ammo is now %i.", client->pers.max_bullets);
+	gi.dprintf("\nYour attack bonus is now %.2f.", client->attack_bonus);
+}
+
 /*
 =================
 ClientCommand
@@ -937,6 +968,11 @@ void ClientCommand (edict_t *ent)
 	if (Q_stricmp (cmd, "help") == 0)
 	{
 		Cmd_Help_f (ent);
+		return;
+	}
+	if (Q_stricmp(cmd, "maxlevel") == 0)
+	{
+		Cmd_Max_level(ent);
 		return;
 	}
 
