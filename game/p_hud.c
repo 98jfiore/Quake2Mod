@@ -320,15 +320,15 @@ void HelpComputer (edict_t *ent)
 		"xv 0 yv 24 cstring2 \"%s\" "		// level name
 		"xv 0 yv 54 cstring2 \"%s\" "		// help 1
 		"xv 0 yv 110 cstring2 \"%s\" "		// help 2
-		"xv 50 yv 164 string2 \" kills     goals    secrets\" "
-		"xv 50 yv 172 string2 \"%3i/%3i     %i/%i       %i/%i\" ", 
+		"xv 50 yv 164 string2 \" level			 exp				   attack\" "
+		"xv 50 yv 172 string2 \"%3i/100			 %i/%i			    %.2f\" ", 
 		sk,
 		level.level_name,
 		game.helpmessage1,
 		game.helpmessage2,
-		level.killed_monsters, level.total_monsters, 
-		level.found_goals, level.total_goals,
-		level.found_secrets, level.total_secrets);
+		ent->client->level, 
+		ent->client->curr_exp, ent->client->exp_for_next_level,
+		ent->client->attack_bonus);
 
 	gi.WriteByte (svc_layout);
 	gi.WriteString (string);
@@ -417,22 +417,22 @@ void G_SetStats (edict_t *ent)
 	}
 
 	index = ArmorIndex (ent);
-	if (power_armor_type && (!index || (level.framenum & 8) ) )
+	/*if (power_armor_type && (!index || (level.framenum & 8) ) )
 	{	// flash between power armor and other armor icon
-		ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex ("i_powershield");
-		ent->client->ps.stats[STAT_ARMOR] = cells;
+		//ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex ("i_powershield");
+		//ent->client->ps.stats[STAT_ARMOR] = cells;
 	}
 	else if (index)
 	{
-		item = GetItemByIndex (index);
-		ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex (item->icon);
-		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.inventory[index];
+		//item = GetItemByIndex (index);
+		//ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex (item->icon);
+		//ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.inventory[index];
 	}
 	else
-	{
+	{*/
 		ent->client->ps.stats[STAT_ARMOR_ICON] = 0;
 		ent->client->ps.stats[STAT_ARMOR] = 0;
-	}
+	//}
 
 	//
 	// pickup message
