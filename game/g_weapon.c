@@ -910,12 +910,7 @@ void rocketReverse_touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface
 	T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
 
 
-	aimdir[YAW] = ent->velocity[YAW] + 180;
-	if (aimdir[YAW] > 360) aimdir[YAW] -= 360;
-	aimdir[PITCH] = ent->velocity[PITCH] + 180;
-	if (aimdir[PITCH] > 360) aimdir[PITCH] -= 360;
-	AngleVectors(aimdir, forward, NULL, NULL);
-	fire_rocket(ent->owner, ent->s.origin, ent->movedir, 25, - 250, 50, 120);
+	fire_rocket(ent->owner, ent->s.origin, ent->movedir, 25, -250, 50, 120);
 
 	gi.WriteByte(svc_temp_entity);
 	if (ent->waterlevel)
