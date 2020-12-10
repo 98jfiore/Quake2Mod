@@ -323,7 +323,8 @@ void HelpComputer (edict_t *ent)
 		"xv 50 yv 164 string2 \" level			 exp				   attack\" "
 		"xv 50 yv 172 string2 \"%3i/100			 %i/%i			    %.2f\" ", 
 		sk,
-		level.level_name,
+		//level.level_name,
+		ent->client->pers.weapon->pickup_name,
 		game.helpmessage1,
 		game.helpmessage2,
 		ent->client->level, 
