@@ -871,7 +871,6 @@ void fire_firework(edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 void rocketReverse_touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	vec3_t		origin;
-	vec3_t		aimdir, forward;
 	int			n;
 
 	if (other == ent->owner)
@@ -910,8 +909,6 @@ void rocketReverse_touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface
 	T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
 
 
-	fire_rocket(ent->owner, ent->s.origin, ent->movedir, 25, -250, 50, 120);
-
 	gi.WriteByte(svc_temp_entity);
 	if (ent->waterlevel)
 		gi.WriteByte(TE_ROCKET_EXPLOSION_WATER);
@@ -919,6 +916,8 @@ void rocketReverse_touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface
 		gi.WriteByte(TE_ROCKET_EXPLOSION);
 	gi.WritePosition(origin);
 	gi.multicast(ent->s.origin, MULTICAST_PHS);
+
+	fire_rocket(ent->owner, ent->s.origin, ent->movedir, 25, -250, 50, 120);
 
 	G_FreeEdict(ent);
 }

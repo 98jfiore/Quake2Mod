@@ -925,6 +925,7 @@ void Cmd_Max_level(edict_t *ent)
 			client->attack_bonus += 0.1;
 		}
 	}
+	client->curr_exp = 0;
 	gi.dprintf("\nCongratulations!  You are now level %i!", client->level);
 	gi.dprintf("\nYour maximum health is now %i.", ent->max_health);
 	gi.dprintf("\nYour maximum ammo is now %i.", client->pers.max_bullets);
